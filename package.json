@@ -4,7 +4,7 @@
   "description": "An api for searching download links, streaming links, pages for your favorite animes",
   "main": "src/index.js",
   "engines": {
-    "node": "16.x"
+    "node": "20.x"
   },
   "scripts": {
     "test": "xo && nyc --reporter=html --reporter=text ava --verbose --timeout=2m",
