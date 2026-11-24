@@ -6,25 +6,27 @@ const animefreak = require('./animefreak/search');
 const animeheight = require('./animeheight/search');
 const utils = require('./utils');
 
+const safe = promise => Promise.resolve(promise).catch(() => null);
+
 module.exports = {
 	links: async (search, options = {}) => {
-		const directories = utils.get_website_from_directory('./src/');
+		const directories = utils.get_website_from_directory(__dirname);
 		const search_paths = utils.get_search_path_for_directories(directories);
 		const promises = search_paths.map(search_path => {
 			const website = require(search_path);
-			return website.search(search, options);
+			return safe(website.search(search, options));
 		});
 		let rsl = await Promise.all(promises);
-		rsl = rsl.flat();
+		rsl = rsl.filter(Boolean).flat();
 		rsl.sort(utils.compare_by_levenshtein);
 		rsl = utils.apply_options(rsl, options);
 		return rsl;
 	},
 	stream: async (search, episode, options = {}) => {
 		const promises = [];
-		const stream_animeland = animeland.stream(search, episode, options);
-		const stream_chiaanime = chiaanime.stream(search, episode, options);
-		const stream_gogoanime = gogoanime.stream(search, episode, options);
+		const stream_animeland = safe(animeland.stream(search, episode, options));
+		const stream_chiaanime = safe(chiaanime.stream(search, episode, options));
+		const stream_gogoanime = safe(gogoanime.stream(search, episode, options));
 		promises.push(stream_animeland);
 		promises.push(stream_chiaanime);
 		promises.push(stream_gogoanime);
@@ -35,7 +37,7 @@ module.exports = {
 	},
 	download: async (search, episode, options = {}) => {
 		const promises = [];
-		const stream_chiaanime = chiaanime.download(search, episode, options);
+		const stream_chiaanime = safe(chiaanime.download(search, episode, options));
 		promises.push(stream_chiaanime);
 		let rsl = await Promise.all(promises);
 		// Removing the empty result
